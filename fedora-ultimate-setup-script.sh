@@ -42,14 +42,14 @@ function check_dependencies() {
 create_package_list() {
     declare -A packages=(
         ['drivers']='libva-intel-driver fuse-exfat'
-        ['multimedia']='ffmpeg mpv mkvtoolnix-gui shotwell'
+        ['multimedia']='mpv ffmpeg mkvtoolnix-gui shotwell'
         ['utils']='gnome-tweaks tldr whipper keepassx transmission-gtk lshw mediainfo klavaro youtube-dl'
         ['gnome_extensions']='gnome-shell-extension-auto-move-windows.noarch gnome-shell-extension-pomodoro'
         ['emulation']='winehq-stable dolphin-emu mame'
         ['audio']='jack-audio-connection-kit'
         ['backup_sync']='borgbackup syncthing'
-        ['languages']='java-1.8.0-openjdk'
-        ['webdev']='chromium chromium-libs-media-freeworld docker docker-compose nodejs php php-json code zeal ShellCheck'
+        ['languages']='java-1.8.0-openjdk nodejs php php-json'
+        ['webdev']='code chromium chromium-libs-media-freeworld docker docker-compose zeal ShellCheck'
         ['firefox extensions']='mozilla-https-everywhere mozilla-privacy-badger mozilla-ublock-origin'
     )
     for package in "${!packages[@]}"; do
