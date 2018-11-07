@@ -52,6 +52,7 @@ create_package_list() {
         ['backup_sync']='borgbackup syncthing'
         ['languages']='java-1.8.0-openjdk'
         ['webdev']='chromium chromium-libs-media-freeworld docker docker-compose nodejs php php-json code zeal ShellCheck'
+        ['firefox extensions']='mozilla-https-everywhere mozilla-privacy-badger mozilla-ublock-origin'
     )
     for package in "${!packages[@]}"; do
         echo "$package: ${GREEN}${packages[$package]}${RESET}" >&2
