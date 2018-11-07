@@ -68,7 +68,7 @@ add_repositories() {
     sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
     if [[ ${PACKAGES_TO_INSTALL[*]} == *'winehq-stable'* ]]; then
-        sudo dnf config-manager --add-repo https://dl.winehq.org/wine-builds/fedora/28/winehq.repo
+        sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/Emulators:/Wine:/Fedora/Fedora_29_standard/Emulators:Wine:Fedora.repo
     fi
 
     if [[ ${PACKAGES_TO_INSTALL[*]} == *'code'* ]]; then
