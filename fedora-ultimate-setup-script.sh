@@ -252,8 +252,11 @@ setup_freetype_freeworld() {
 create_offline_install() {
     sudo dnf -y upgrade --downloadonly
     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly
-    echo "Your .rpm files live in ${GREEN}/var/cache/dnf/updates-<some hex string>/packages${RESET}, install with ${GREEN}sudo dnf install *.rpm${RESET}"
-    echo "Remove cached packages from here by executing ${GREEN}dnf clean packages${RESET}"
+    mkdir "$HOME/offline-install"
+    cd /var/cache/dnf/
+    shopt -s globstar
+    sudo mv **/*.rpm "$HOME/offline-install"
+    echo "Your .rpm files live in ${GREEN}/offline-install${RESET}, install with ${GREEN}sudo dnf install *.rpm${RESET}"
     exit
 }
 
