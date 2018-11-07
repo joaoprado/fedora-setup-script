@@ -5,10 +5,10 @@
 #         FILE: fedora-ultimate-setup-script.sh
 #        USAGE: fedora-ultimate-setup-script.sh
 #
-#  DESCRIPTION: Post-installation setup script for Fedora 28/29 Workstation
+#  DESCRIPTION: Post-installation setup script for Fedora 29 Workstation
 #      WEBSITE: https://www.elsewebdevelopment.com/
 #
-# REQUIREMENTS: Fresh copy of Fedora 28/29 installed on your computer
+# REQUIREMENTS: Fresh copy of Fedora 29 installed on your computer
 #       AUTHOR: David Else
 #      COMPANY: Else Web Development
 #      VERSION: 2.0
@@ -31,8 +31,8 @@ GIT_USER_NAME='David'
 # check dependencies
 #==================================================================================================
 function check_dependencies() {
-    if [[ $(rpm -E %fedora) -lt 28 ]]; then
-        echo >&2 "You must install at least ${GREEN}Fedora 28${RESET} to use this script" && exit 1
+    if [[ $(rpm -E %fedora) -lt 29 ]]; then
+        echo >&2 "You must install at least ${GREEN}Fedora 29${RESET} to use this script" && exit 1
     fi
 }
 
@@ -42,9 +42,9 @@ function check_dependencies() {
 create_package_list() {
     declare -A packages=(
         ['drivers']='libva-intel-driver fuse-exfat'
-        ['multimedia']='gstreamer1-vaapi gstreamer1-libav ffmpeg mpv mkvtoolnix-gui shotwell'
-        ['utils']='gnome-tweak-tool tldr whipper keepassx transmission-gtk lshw mediainfo klavaro youtube-dl freetype-freeworld'
-        ['gnome_extensions']='gnome-shell-extension-auto-move-windows.noarch gnome-shell-extension-pomodoro gnome-terminal-nautilus'
+        ['multimedia']='ffmpeg mpv mkvtoolnix-gui shotwell'
+        ['utils']='gnome-tweaks tldr whipper keepassx transmission-gtk lshw mediainfo klavaro youtube-dl'
+        ['gnome_extensions']='gnome-shell-extension-auto-move-windows.noarch gnome-shell-extension-pomodoro'
         ['emulation']='winehq-stable dolphin-emu mame'
         ['audio']='jack-audio-connection-kit'
         ['backup_sync']='borgbackup syncthing'
@@ -58,7 +58,7 @@ create_package_list() {
     done
 }
 
-REMOVE_LIST=(gnome-photos gnome-documents rhythmbox cheese)
+REMOVE_LIST=(gnome-photos gnome-documents rhythmbox totem cheese)
 
 #==================================================================================================
 # add repositories
@@ -243,11 +243,11 @@ setup_git() {
 #==================================================================================================
 # setup subpixel hinting for freetype-freeworld
 #==================================================================================================
-setup_freetype_freeworld() {
-    gsettings set org.gnome.settings-daemon.plugins.xsettings hinting slight
-    gsettings set org.gnome.settings-daemon.plugins.xsettings antialiasing rgba
-    echo "Xft.lcdfilter: lcddefault" >>"$HOME/.Xresources"
-}
+# setup_freetype_freeworld() {
+#     gsettings set org.gnome.settings-daemon.plugins.xsettings hinting slight
+#     gsettings set org.gnome.settings-daemon.plugins.xsettings antialiasing rgba
+#     echo "Xft.lcdfilter: lcddefault" >>"$HOME/.Xresources"
+# }
 
 #==================================================================================================
 # create offline install (experimental)
@@ -305,9 +305,6 @@ main() {
             fi
             if [[ ${PACKAGES_TO_INSTALL[*]} == *'jack-audio'* ]]; then
                 setup_jack
-            fi
-            if [[ ${PACKAGES_TO_INSTALL[*]} == *'freetype-freeworld'* ]]; then
-                setup_freetype_freeworld
             fi
             cat <<EOL
 After installation you may perform these additional tasks:
