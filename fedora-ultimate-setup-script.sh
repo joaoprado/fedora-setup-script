@@ -294,7 +294,7 @@ main() {
             read -rp "What is this computer's name (hostname)? " hostname
             hostnamectl set-hostname "$hostname"
             echo "Updating Fedora and installing packages..."
-            sudo dnf remove "${REMOVE_LIST[@]}"
+            sudo dnf -y remove "${REMOVE_LIST[@]}"
             sudo dnf -y --refresh upgrade
             sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}"
             setup_desktop
