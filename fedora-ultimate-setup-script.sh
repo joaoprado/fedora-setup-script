@@ -219,10 +219,10 @@ EOL
 # setup shfmt *binary must be in current directory
 #==================================================================================================
 function setup_shfmt() {
-    if [[ -f ./shfmt_v2.3.0_linux_amd64 ]]; then
+    if [[ -f ./shfmt_v2.5.1_linux_amd64 ]]; then
         # Latest binary available from https://github.com/mvdan/sh/releases
-        chmod +x shfmt_v2.3.0_linux_amd64
-        sudo mv shfmt_v2.3.0_linux_amd64 /usr/local/bin/shfmt
+        chmod +x shfmt_v2.5.1_linux_amd64
+        sudo mv shfmt_v2.5.1_linux_amd64 /usr/local/bin/shfmt
     fi
 }
 
