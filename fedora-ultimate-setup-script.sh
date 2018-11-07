@@ -234,6 +234,7 @@ setup_git() {
         git config --global user.name $GIT_USER_NAME
         echo "No global git user name was set, I have set it to ${BOLD}$GIT_USER_NAME${RESET}"
     fi
+
     if [[ -z $(git config --get user.email) ]]; then
         git config --global user.email $GIT_EMAIL
         echo "No global git email was set, I have set it to ${BOLD}$GIT_EMAIL${RESET}"
@@ -291,6 +292,7 @@ main() {
             create_offline_install
             exit
         else
+            echo
             read -rp "What is this computer's name (hostname)? " hostname
             hostnamectl set-hostname "$hostname"
             echo "Updating Fedora and installing packages..."
@@ -299,19 +301,35 @@ main() {
             sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}"
             setup_desktop
             setup_git
+
             if [[ ${PACKAGES_TO_INSTALL[*]} == *'code'* ]]; then
                 setup_vscode
                 setup_shfmt
             fi
+
+            if [[ ${PACKAGES_TO_INSTALL[*]} == *'mpv'* ]]; then
+                mkdir "$HOME/.config/mpv"
+                cat >"$HOME/.config/mpv/mpv.conf" <<EOL
+profile=gpu-hq
+hwdec=auto
+fullscreen=yes
+EOL
+            fi
+
             if [[ ${PACKAGES_TO_INSTALL[*]} == *'jack-audio'* ]]; then
                 setup_jack
             fi
+
             cat <<EOL
 After installation you may perform these additional tasks:
 
 - Run mpv once then:
- 'printf "profile=gpu-hq\nfullscreen=yes\n" | tee "$HOME/.config/mpv/mpv.conf"' or:
-  profile=gpu-hq\nfullscreen=yes\nvideo-sync=display-resample\ninterpolation=yes\ntscale=oversample\n
+ 'printf "profile=gpu-hq\nhwdec=auto\nfullscreen=yes\n" | tee "$HOME/.config/mpv/mpv.conf"' or:
+ # gpu-context=drm
+
+ # video-sync=display-resample
+ # interpolation
+ # tscale=oversample
 - Install 'Hide Top Bar' extension from Gnome software
 - Firefox "about:support" what is compositor? If 'basic' open "about:config"
   find "layers.acceleration.force-enabled" and switch to true, this will
