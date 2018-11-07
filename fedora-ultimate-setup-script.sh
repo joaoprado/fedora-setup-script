@@ -253,14 +253,15 @@ setup_freetype_freeworld() {
 # create offline install (experimental)
 #==================================================================================================
 create_offline_install() {
+    dnf clean packages
     sudo dnf -y upgrade --downloadonly
     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly
     mkdir "$HOME/offline-install"
     cd /var/cache/dnf/
     shopt -s globstar
     sudo mv **/*.rpm "$HOME/offline-install"
+    echo
     echo "Your .rpm files live in ${GREEN}/offline-install${RESET}, install with ${GREEN}sudo dnf install *.rpm${RESET}"
-    exit
 }
 
 #==================================================================================================
@@ -278,27 +279,37 @@ main() {
     echo
     echo "${GREEN}${REMOVE_LIST[*]}${RESET}"
     echo
-    read -rp "What is this computer's name (hostname)? " hostname
-    hostnamectl set-hostname "$hostname"
+    read -p "Proceed with these options? (y/n) " -n 1 -r
     echo
-    add_repositories
-    echo "Updating Fedora and installing packages..."
-    sudo dnf remove "${REMOVE_LIST[@]}"
-    sudo dnf -y --refresh upgrade
-    sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}"
-    setup_desktop
-    setup_git
-    if [[ ${PACKAGES_TO_INSTALL[*]} == *'code'* ]]; then
-        setup_vscode
-        setup_shfmt
-    fi
-    if [[ ${PACKAGES_TO_INSTALL[*]} == *'jack-audio'* ]]; then
-        setup_jack
-    fi
-    if [[ ${PACKAGES_TO_INSTALL[*]} == *'freetype-freeworld'* ]]; then
-        setup_freetype_freeworld
-    fi
-    cat <<EOL
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "Adding repositories..."
+        add_repositories
+        echo
+        read -p "For offline installation would you like to create a directory of .rpm files with new system updates + new programs and quit? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            create_offline_install
+            exit
+        else
+            read -rp "What is this computer's name (hostname)? " hostname
+            hostnamectl set-hostname "$hostname"
+            echo "Updating Fedora and installing packages..."
+            sudo dnf remove "${REMOVE_LIST[@]}"
+            sudo dnf -y --refresh upgrade
+            sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}"
+            setup_desktop
+            setup_git
+            if [[ ${PACKAGES_TO_INSTALL[*]} == *'code'* ]]; then
+                setup_vscode
+                setup_shfmt
+            fi
+            if [[ ${PACKAGES_TO_INSTALL[*]} == *'jack-audio'* ]]; then
+                setup_jack
+            fi
+            if [[ ${PACKAGES_TO_INSTALL[*]} == *'freetype-freeworld'* ]]; then
+                setup_freetype_freeworld
+            fi
+            cat <<EOL
 After installation you may perform these additional tasks:
 
 - Run mpv once then:
@@ -321,5 +332,10 @@ After installation you may perform these additional tasks:
   shutdown -r
   =================
 EOL
+        fi
+    else
+        exit
+    fi
 }
+
 main
