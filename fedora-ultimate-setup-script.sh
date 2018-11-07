@@ -18,10 +18,8 @@
 set -euo pipefail
 
 #==================================================================================================
-# global Constants
+# global constants
 #==================================================================================================
-REMOVE_LIST=(gnome-photos gnome-documents rhythmbox cheese)
-
 GREEN=$(tput setaf 2)
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
@@ -39,7 +37,7 @@ function check_dependencies() {
 }
 
 #==================================================================================================
-# create list of packages to install
+# packages to install / remove
 #==================================================================================================
 create_package_list() {
     declare -A packages=(
@@ -59,6 +57,8 @@ create_package_list() {
         PACKAGES_TO_INSTALL+=(${packages[$package]})
     done
 }
+
+REMOVE_LIST=(gnome-photos gnome-documents rhythmbox cheese)
 
 #==================================================================================================
 # add repositories
@@ -310,7 +310,6 @@ After installation you may perform these additional tasks:
   force OpenGL acceleration
 - Update .bash_profile with
   'PATH=$PATH:$HOME/.local/bin:$HOME/bin:$HOME/Documents/scripts:$HOME/Documents/scripts/borg-backup'
-- Install HTTPS everywhere, privacy badger, ublock origin in Firefox/Chromium
 - Consider "sudo dnf install kernel-tools", "sudo cpupower frequency-set --governor performance"
 - Files > preferences > views > sort folders before files
 - Change shotwell import directory format to %Y/%m + rename lower case, import photos from external drive
