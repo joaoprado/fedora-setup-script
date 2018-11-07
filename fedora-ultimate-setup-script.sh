@@ -249,6 +249,9 @@ setup_freetype_freeworld() {
     echo "Xft.lcdfilter: lcddefault" >>"$HOME/.Xresources"
 }
 
+#==================================================================================================
+# create offline install (experimental)
+#==================================================================================================
 create_offline_install() {
     sudo dnf -y upgrade --downloadonly
     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly
