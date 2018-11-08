@@ -14,18 +14,10 @@
 #      VERSION: 2.0
 #==================================================================================================
 
-# exit on non-zero exit status, undefined var, and any failure in pipeline
 set -euo pipefail
-
-#==================================================================================================
-# global constants
-#==================================================================================================
 GREEN=$(tput setaf 2)
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
-
-GIT_EMAIL='example@example.com'
-GIT_USER_NAME='David'
 
 #==================================================================================================
 # check dependencies
@@ -37,8 +29,12 @@ function check_dependencies() {
 }
 
 #==================================================================================================
-# packages to install / remove
+# set user preferences
 #==================================================================================================
+GIT_EMAIL='example@example.com'
+GIT_USER_NAME='David'
+REMOVE_LIST=(gnome-photos gnome-documents rhythmbox totem cheese)
+
 create_package_list() {
     declare -A packages=(
         ['drivers']='libva-intel-driver fuse-exfat'
@@ -57,8 +53,6 @@ create_package_list() {
         PACKAGES_TO_INSTALL+=(${packages[$package]})
     done
 }
-
-REMOVE_LIST=(gnome-photos gnome-documents rhythmbox totem cheese)
 
 #==================================================================================================
 # add repositories
@@ -81,9 +75,6 @@ add_repositories() {
 # setup desktop
 #==================================================================================================
 setup_desktop() {
-    #==============================================================================================
-    # various
-    #==============================================================================================
     mkdir "$HOME/sites"
     echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
     touch ~/Templates/empty-file # so you can create new documents from nautilus
@@ -95,8 +86,9 @@ EOL
     #==============================================================================================
     # setup pulse audio
     #
-    # *pacmd list-sinks | grep sample and see bit-depth available
+    # *pacmd list-sinks | grep sample and see bit-depth available for interface
     # *pulseaudio --dump-re-sample-methods and see re-sampling available
+    #
     # *MAKE SURE your interface can handle s32le 32bit rather than the default 16bit
     #==============================================================================================
     sudo sed -i "s/; default-sample-format = s16le/default-sample-format = s32le/g" /etc/pulse/daemon.conf
@@ -118,7 +110,7 @@ EOL
 }
 
 #==================================================================================================
-# setup vscode
+# setup visual studio code
 #==================================================================================================
 setup_vscode() {
     local code_extensions=(ban.spellright bierner.comment-tagged-templates
@@ -216,13 +208,17 @@ EOL
 }
 
 #==================================================================================================
-# setup shfmt *binary must be in current directory
+# setup shfmt
+#
+# *used for vs code shell format extension
+# *binary must be in current directory https://github.com/mvdan/sh/releases
 #==================================================================================================
 function setup_shfmt() {
     if [[ -f ./shfmt_v2.5.1_linux_amd64 ]]; then
-        # Latest binary available from https://github.com/mvdan/sh/releases
         chmod +x shfmt_v2.5.1_linux_amd64
         sudo mv shfmt_v2.5.1_linux_amd64 /usr/local/bin/shfmt
+    else
+        echo "Could not find ${BOLD}shfmt_v2.5.1_linux_amd64${RESET} file, skipping install"
     fi
 }
 
@@ -251,18 +247,24 @@ setup_git() {
 # }
 
 #==================================================================================================
-# create offline install (experimental)
+# create offline install
 #==================================================================================================
 create_offline_install() {
+    shopt -s globstar
+    cd /var/cache/dnf/
+
     dnf clean packages
     sudo dnf -y upgrade --downloadonly
+    mkdir "$HOME/offline-install-updates"
+    sudo mv **/*.rpm "$HOME/offline-install-updates"
+
+    dnf clean packages
     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly
-    mkdir "$HOME/offline-install"
-    cd /var/cache/dnf/
-    shopt -s globstar
-    sudo mv **/*.rpm "$HOME/offline-install"
+    mkdir "$HOME/offline-install-packages"
+    sudo mv **/*.rpm "$HOME/offline-install-packages"
     echo
-    echo "Your .rpm files live in ${GREEN}/offline-install${RESET}, install with ${GREEN}sudo dnf install *.rpm${RESET}"
+    echo "Your .rpm files live in ${GREEN}~/offline-install-updates${RESET} and ${GREEN}~/offline-install-packages${RESET}"
+    echo "Install updates first then packages with ${GREEN}sudo dnf install *.rpm${RESET} in respective directories"
 }
 
 #==================================================================================================
@@ -323,8 +325,7 @@ EOL
             cat <<EOL
 After installation you may perform these additional tasks:
 
-- Run mpv once then:
- 'printf "profile=gpu-hq\nhwdec=auto\nfullscreen=yes\n" | tee "$HOME/.config/mpv/mpv.conf"' or:
+- mpv addition settings include:
  # gpu-context=drm
 
  # video-sync=display-resample
