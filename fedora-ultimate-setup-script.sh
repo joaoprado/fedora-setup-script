@@ -32,7 +32,7 @@ function check_dependencies() {
 # set user preferences
 #==================================================================================================
 GIT_EMAIL='example@example.com'
-GIT_USER_NAME='David'
+GIT_USER_NAME='example-name'
 REMOVE_LIST=(gnome-photos gnome-documents rhythmbox totem cheese)
 
 create_package_list() {
@@ -165,15 +165,15 @@ setup_vscode() {
   "liveServer.settings.AdvanceCustomBrowserCmdLine": "/usr/bin/chromium-browser --remote-debugging-port=9222",
   // Spell Right extension
   "spellright.language": "English (British)",
+  "spellright.documentTypes": ["markdown", "latex", "plaintext"],
   // Prettier formatting extension
   "prettier.singleQuote": true,
   "prettier.trailingComma": "all",
   // HTML formatting
   "html.format.endWithNewline": true,
   "html.format.wrapLineLength": 80,
-  "workbench.statusBar.feedback.visible": false,
-  "spellright.documentTypes": ["markdown", "latex", "plaintext"],
   // Various
+  "workbench.statusBar.feedback.visible": false,
   "css.lint.zeroUnits": "warning",
   "css.lint.important": "warning",
   "css.lint.universalSelector": "warning",
@@ -182,7 +182,6 @@ setup_vscode() {
   "javascript.updateImportsOnFileMove.enabled": "always",
   "javascript.preferences.quoteStyle": "single",
   "html-css-class-completion.enableEmmetSupport": true,
-  "eslint.run": "onSave",
   "json.format.enable": false,
   "editor.lineNumbers": "off",
   "search.followSymlinks": false
@@ -249,22 +248,51 @@ setup_git() {
 #==================================================================================================
 # create offline install
 #==================================================================================================
+# create_offline_install() {
+#     shopt -s globstar
+
+#     dnf clean packages
+#     cd /var/cache/dnf/
+#     sudo dnf -y upgrade --downloadonly
+#     mkdir "$HOME/offline-system-updates"
+#     sudo mv **/*.rpm "$HOME/offline-system-updates"
+
+#     # install updates before downloading user selected programs to avoid dependency downgrading
+#     cd "$HOME/offline-system-updates"
+#     sudo dnf install *.rpm
+
+#     dnf clean packages
+#     cd /var/cache/dnf/
+#     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly
+#     mkdir "$HOME/offline-user-packages"
+#     sudo mv **/*.rpm "$HOME/offline-user-packages"
+#     echo
+#     echo "Your .rpm files live in ${GREEN}~/offline-system-updates${RESET} and ${GREEN}~/offline-user-packages${RESET}"
+#     echo "${BOLD}On Fresh Fedora 29${RESET} install system updates first, then user packages with ${GREEN}sudo dnf install *.rpm${RESET} in respective directories"
+#     echo "Don't forget to add the repos for updates!"
+# }
+
+#==================================================================================================
+# create offline install
+# --downloaddir=<path>
+#==================================================================================================
 create_offline_install() {
-    shopt -s globstar
-    cd /var/cache/dnf/
+    local system_updates_dir="$HOME/offline-system-updates"
+    local user_updates_dir="$HOME/offline-user-packages"
 
-    dnf clean packages
-    sudo dnf -y upgrade --downloadonly
-    mkdir "$HOME/offline-install-updates"
-    sudo mv **/*.rpm "$HOME/offline-install-updates"
+    mkdir "$system_updates_dir" "$user_updates_dir"
 
-    dnf clean packages
-    sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly
-    mkdir "$HOME/offline-install-packages"
-    sudo mv **/*.rpm "$HOME/offline-install-packages"
+    sudo dnf -y upgrade --downloadonly --downloaddir="$system_updates_dir"
+
+    # install system updates first to avoid dnf downloading unwanted dependencies for user-packages
+    cd "$system_updates_dir"
+    sudo dnf install *.rpm
+
+    sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly --downloaddir="$user_updates_dir"
+
     echo
-    echo "Your .rpm files live in ${GREEN}~/offline-install-updates${RESET} and ${GREEN}~/offline-install-packages${RESET}"
-    echo "Install updates first then packages with ${GREEN}sudo dnf install *.rpm${RESET} in respective directories"
+    echo "Your .rpm files live in ${GREEN}$system_updates_dir${RESET} and ${GREEN}$user_updates_dir${RESET}"
+    echo "${BOLD}On Fresh Fedora 29${RESET} install system updates first, then user packages with ${GREEN}sudo dnf install *.rpm${RESET} in respective directories"
 }
 
 #==================================================================================================
@@ -307,6 +335,10 @@ main() {
             if [[ ${PACKAGES_TO_INSTALL[*]} == *'code'* ]]; then
                 setup_vscode
                 setup_shfmt
+            fi
+
+            if [[ ${PACKAGES_TO_INSTALL[*]} == *'node'* ]]; then
+                npm install -g pnpm
             fi
 
             if [[ ${PACKAGES_TO_INSTALL[*]} == *'mpv'* ]]; then
