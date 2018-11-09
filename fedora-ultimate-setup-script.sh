@@ -51,7 +51,7 @@ create_package_list() {
 # add repositories
 #==================================================================================================
 add_repositories() {
-    echo "Adding repositories..."
+    echo "${BOLD}Adding repositories...${RESET}"
     sudo dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
     sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
@@ -69,13 +69,12 @@ add_repositories() {
 # setup visual studio code
 #==================================================================================================
 setup_vscode() {
-    echo "Setting up Visual Studio Code..."
+    echo "${BOLD}Setting up Visual Studio Code...${RESET}"
     local code_extensions=(ban.spellright bierner.comment-tagged-templates
         dbaeumer.vscode-eslint deerawan.vscode-dash esbenp.prettier-vscode
         foxundermoon.shell-format mkaufman.HTMLHint msjsdiag.debugger-for-chrome
         ritwickdey.LiveServer timonwong.shellcheck WallabyJs.quokka-vscode
         Zignd.html-css-class-completion)
-    echo
     for extension in "${code_extensions[@]}"; do
         code --install-extension "$extension"
     done
@@ -120,9 +119,6 @@ setup_vscode() {
   "liveServer.settings.donotShowInfoMsg": true,
   "liveServer.settings.ChromeDebuggingAttachment": true,
   "liveServer.settings.AdvanceCustomBrowserCmdLine": "/usr/bin/chromium-browser --remote-debugging-port=9222",
-  // Spell Right extension
-  "spellright.language": "English (British)",
-  "spellright.documentTypes": ["markdown", "latex", "plaintext"],
   // Prettier formatting extension
   "prettier.singleQuote": true,
   "prettier.trailingComma": "all",
@@ -150,8 +146,7 @@ EOL
 # setup jack
 #==================================================================================================
 setup_jack() {
-    echo "Setting up jack..."
-    echo
+    echo "${BOLD}Setting up jack...${RESET}"
     sudo usermod -a -G jackuser "$USERNAME" # Add current user to jackuser group
     sudo tee /etc/security/limits.d/95-jack.conf <<EOL
 # Default limits for users of jack-audio-connection-kit
@@ -171,12 +166,12 @@ EOL
 # *binary must be in current directory https://github.com/mvdan/sh/releases
 #==================================================================================================
 function setup_shfmt() {
-    echo "Setting up shfmt..."
+    echo "${BOLD}Setting up shfmt...${RESET}"
     if [[ -f ./shfmt_v2.5.1_linux_amd64 ]]; then
         chmod +x shfmt_v2.5.1_linux_amd64
         sudo mv shfmt_v2.5.1_linux_amd64 /usr/local/bin/shfmt
     else
-        echo "Could not find ${BOLD}shfmt_v2.5.1_linux_amd64${RESET} file, skipping install"
+        echo "Could not find ${GREEN}shfmt_v2.5.1_linux_amd64${RESET} file, skipping install"
     fi
 }
 
@@ -184,7 +179,7 @@ function setup_shfmt() {
 # setup git
 #==================================================================================================
 setup_git() {
-    echo "Setting up git..."
+    echo "${BOLD}Setting up git...${RESET}"
     if [[ -z $(git config --get user.name) ]]; then
         git config --global user.name $GIT_USER_NAME
         echo "No global git user name was set, I have set it to ${BOLD}$GIT_USER_NAME${RESET}"
@@ -200,7 +195,7 @@ setup_git() {
 # setup mpv (before it is run config file or dir does not exist)
 #==================================================================================================
 setup_mpv() {
-    echo "Setting up mpv..."
+    echo "${BOLD}Setting up mpv...${RESET}"
     mkdir "$HOME/.config/mpv"
     cat >"$HOME/.config/mpv/mpv.conf" <<EOL
 profile=gpu-hq
@@ -215,7 +210,7 @@ EOL
 create_offline_install() {
     mkdir "$system_updates_dir" "$user_updates_dir"
 
-    echo "Updating Fedora and installing packages..."
+    echo "${BOLD}Updating Fedora and installing packages...${RESET}"
     sudo dnf -y upgrade --downloadonly --downloaddir="$system_updates_dir"
     cd "$system_updates_dir"
     sudo dnf install *.rpm
@@ -232,7 +227,7 @@ create_offline_install() {
 # update_and_install_online
 #==================================================================================================
 update_and_install_online() {
-    echo "Updating Fedora and installing packages..."
+    echo "${BOLD}Updating Fedora and installing packages...${RESET}"
     sudo dnf -y --refresh upgrade
     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}"
 }
@@ -245,7 +240,7 @@ update_and_install_offline() {
         echo "${GREEN}$system_updates_dir${RESET} or ${GREEN}$user_updates_dir${RESET} do not exist!"
         exit 1
     else
-        echo "Updating Fedora and installing packages..."
+        echo "${BOLD}Updating Fedora and installing packages...${RESET}"
         cd "$system_updates_dir"
         sudo dnf install *.rpm
         cd "$user_updates_dir"
@@ -257,7 +252,7 @@ update_and_install_offline() {
 # remove_unwanted_programs
 #==================================================================================================
 remove_unwanted_programs() {
-    echo "Removing unwanted programs..."
+    echo "${BOLD}Removing unwanted programs...${RESET}"
     sudo dnf -y remove "${REMOVE_LIST[@]}"
 }
 
@@ -276,8 +271,8 @@ main() {
         return 1
     }
 
-    if [[ $(rpm -E %fedora) -lt 28 ]]; then
-        echo >&2 "You must install at least ${GREEN}Fedora 28${RESET} to use this script" && exit 1
+    if [[ $(rpm -E %fedora) -lt 29 ]]; then
+        echo >&2 "You must install at least ${GREEN}Fedora 29${RESET} to use this script" && exit 1
     fi
 
     clear
