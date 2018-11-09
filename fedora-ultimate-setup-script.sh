@@ -260,16 +260,16 @@ remove_unwanted_programs() {
 # main
 #==================================================================================================
 main() {
-    contains() {
-        declare -n arr
-        arr=$1
-        local term=$2
-        local el
-        for el in "${arr[@]}"; do
-            [[ $el == "$term" ]] && return 0
-        done
-        return 1
-    }
+    # contains() {
+    #     declare -n arr
+    #     arr=$1
+    #     local term=$2
+    #     local el
+    #     for el in "${arr[@]}"; do
+    #         [[ $el == "$term" ]] && return 0
+    #     done
+    #     return 1
+    # }
 
     if [[ $(rpm -E %fedora) -lt 29 ]]; then
         echo >&2 "You must install at least ${GREEN}Fedora 29${RESET} to use this script" && exit 1
@@ -325,7 +325,6 @@ EOL
         add_repositories
         remove_unwanted_programs
         create_offline_install
-
         ;;
     3)
         add_repositories
@@ -343,22 +342,39 @@ EOL
     #==============================================================================================
     setup_git
 
-    if contains PACKAGES_TO_INSTALL 'code'; then
+    # if contains PACKAGES_TO_INSTALL 'code'; then
+    #     setup_vscode
+    #     setup_shfmt
+    # fi
+
+    # if contains PACKAGES_TO_INSTALL 'node'; then
+    #     sudo npm install -g pnpm
+    # fi
+
+    # if contains PACKAGES_TO_INSTALL 'mpv'; then
+    #     setup_mpv
+    # fi
+
+    # if contains PACKAGES_TO_INSTALL 'jack-audio'; then
+    #     setup_jack
+    # fi
+
+    # note the spaces to make sure something like 'notnode' could not slip in
+    case " ${PACKAGES_TO_INSTALL[*]} " in
+    *' code '*)
         setup_vscode
         setup_shfmt
-    fi
-
-    if contains PACKAGES_TO_INSTALL 'node'; then
-        npm install -g pnpm
-    fi
-
-    if contains PACKAGES_TO_INSTALL 'mpv'; then
+        ;;&
+    *' node '*)
+        sudo npm install -g pnpm
+        ;;&
+    *' mpv '*)
         setup_mpv
-    fi
-
-    if contains PACKAGES_TO_INSTALL 'jack-audio'; then
+        ;;&
+    *' jack-audio '*)
         setup_jack
-    fi
+        ;;&
+    esac
 
     #==============================================================================================
     # setup pulse audio
