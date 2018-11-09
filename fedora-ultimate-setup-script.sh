@@ -14,6 +14,9 @@
 #      VERSION: 2.0
 #==================================================================================================
 
+# is this the secret to stopping them being deleted after install? will it work without reset?
+echo 'keepcache=1' | sudo tee -a /etc/dnf/dnf.conf
+
 set -euo pipefail
 GREEN=$(tput setaf 2)
 BOLD=$(tput bold)
@@ -242,9 +245,9 @@ update_and_install_offline() {
     else
         echo "${BOLD}Updating Fedora and installing packages...${RESET}"
         cd "$system_updates_dir"
-        sudo dnf install *.rpm
+        sudo dnf -y install *.rpm
         cd "$user_updates_dir"
-        sudo dnf install *.rpm
+        sudo dnf -y install *.rpm
     fi
 }
 
@@ -260,17 +263,6 @@ remove_unwanted_programs() {
 # main
 #==================================================================================================
 main() {
-    # contains() {
-    #     declare -n arr
-    #     arr=$1
-    #     local term=$2
-    #     local el
-    #     for el in "${arr[@]}"; do
-    #         [[ $el == "$term" ]] && return 0
-    #     done
-    #     return 1
-    # }
-
     if [[ $(rpm -E %fedora) -lt 29 ]]; then
         echo >&2 "You must install at least ${GREEN}Fedora 29${RESET} to use this script" && exit 1
     fi
@@ -342,36 +334,19 @@ EOL
     #==============================================================================================
     setup_git
 
-    # if contains PACKAGES_TO_INSTALL 'code'; then
-    #     setup_vscode
-    #     setup_shfmt
-    # fi
-
-    # if contains PACKAGES_TO_INSTALL 'node'; then
-    #     sudo npm install -g pnpm
-    # fi
-
-    # if contains PACKAGES_TO_INSTALL 'mpv'; then
-    #     setup_mpv
-    # fi
-
-    # if contains PACKAGES_TO_INSTALL 'jack-audio'; then
-    #     setup_jack
-    # fi
-
     # note the spaces to make sure something like 'notnode' could not slip in
     case " ${PACKAGES_TO_INSTALL[*]} " in
     *' code '*)
         setup_vscode
         setup_shfmt
         ;;&
-    *' node '*)
+    *' nodejs '*)
         sudo npm install -g pnpm
         ;;&
     *' mpv '*)
         setup_mpv
         ;;&
-    *' jack-audio '*)
+    *' jack-audio-connection-kit '*)
         setup_jack
         ;;&
     esac
