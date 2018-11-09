@@ -20,17 +20,10 @@ BOLD=$(tput bold)
 RESET=$(tput sgr0)
 
 #==================================================================================================
-# check dependencies
-#==================================================================================================
-function check_dependencies() {
-    if [[ $(rpm -E %fedora) -lt 29 ]]; then
-        echo >&2 "You must install at least ${GREEN}Fedora 29${RESET} to use this script" && exit 1
-    fi
-}
-
-#==================================================================================================
 # set user preferences
 #==================================================================================================
+system_updates_dir="$HOME/offline-system-updates"
+user_updates_dir="$HOME/offline-user-packages"
 GIT_EMAIL='example@example.com'
 GIT_USER_NAME='example-name'
 REMOVE_LIST=(gnome-photos gnome-documents rhythmbox totem cheese)
@@ -58,6 +51,7 @@ create_package_list() {
 # add repositories
 #==================================================================================================
 add_repositories() {
+    echo "Adding repositories..."
     sudo dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
     sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
@@ -72,47 +66,10 @@ add_repositories() {
 }
 
 #==================================================================================================
-# setup desktop
-#==================================================================================================
-setup_desktop() {
-    mkdir "$HOME/sites"
-    echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
-    touch ~/Templates/empty-file # so you can create new documents from nautilus
-    cat >>"$HOME/.bashrc" <<EOL
-alias ls="ls -ltha --color --group-directories-first" # l=long listing format, t=sort by modification time (newest first), h=human readable sizes, a=print hidden files
-alias tree="tree -Catr --noreport --dirsfirst --filelimit 100" # -C=colorization on, a=print hidden files, t=sort by modification time, r=reversed sort by time (newest first)
-EOL
-
-    #==============================================================================================
-    # setup pulse audio
-    #
-    # *pacmd list-sinks | grep sample and see bit-depth available for interface
-    # *pulseaudio --dump-re-sample-methods and see re-sampling available
-    #
-    # *MAKE SURE your interface can handle s32le 32bit rather than the default 16bit
-    #==============================================================================================
-    sudo sed -i "s/; default-sample-format = s16le/default-sample-format = s32le/g" /etc/pulse/daemon.conf
-    sudo sed -i "s/; resample-method = speex-float-1/resample-method = speex-float-10/g" /etc/pulse/daemon.conf
-    sudo sed -i "s/; avoid-resampling = false/avoid-resampling = true/g" /etc/pulse/daemon.conf
-
-    #==============================================================================================
-    # setup gnome desktop gsettings
-    #==============================================================================================
-    gsettings set org.gnome.settings-daemon.plugins.media-keys max-screencast-length 0 # Ctrl + Shift + Alt + R to start and stop screencast
-    gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:minimize,maximize,close'
-    gsettings set org.gnome.desktop.interface clock-show-date true
-    gsettings set org.gnome.desktop.session idle-delay 1200
-    gsettings set org.gnome.desktop.input-sources xkb-options "['caps:backspace', 'terminate:ctrl_alt_bksp']"
-    gsettings set org.gnome.shell.extensions.auto-move-windows application-list "['org.gnome.Nautilus.desktop:2', 'org.gnome.Terminal.desktop:3', 'code.desktop:1', 'firefox.desktop:1']"
-    gsettings set org.gnome.shell enabled-extensions "['pomodoro@arun.codito.in', 'auto-move-windows@gnome-shell-extensions.gcampax.github.com']"
-    gsettings set org.gnome.settings-daemon.plugins.color night-light-enabled true
-
-}
-
-#==================================================================================================
 # setup visual studio code
 #==================================================================================================
 setup_vscode() {
+    echo "Setting up Visual Studio Code..."
     local code_extensions=(ban.spellright bierner.comment-tagged-templates
         dbaeumer.vscode-eslint deerawan.vscode-dash esbenp.prettier-vscode
         foxundermoon.shell-format mkaufman.HTMLHint msjsdiag.debugger-for-chrome
@@ -193,6 +150,7 @@ EOL
 # setup jack
 #==================================================================================================
 setup_jack() {
+    echo "Setting up jack..."
     echo
     sudo usermod -a -G jackuser "$USERNAME" # Add current user to jackuser group
     sudo tee /etc/security/limits.d/95-jack.conf <<EOL
@@ -213,6 +171,7 @@ EOL
 # *binary must be in current directory https://github.com/mvdan/sh/releases
 #==================================================================================================
 function setup_shfmt() {
+    echo "Setting up shfmt..."
     if [[ -f ./shfmt_v2.5.1_linux_amd64 ]]; then
         chmod +x shfmt_v2.5.1_linux_amd64
         sudo mv shfmt_v2.5.1_linux_amd64 /usr/local/bin/shfmt
@@ -225,6 +184,7 @@ function setup_shfmt() {
 # setup git
 #==================================================================================================
 setup_git() {
+    echo "Setting up git..."
     if [[ -z $(git config --get user.name) ]]; then
         git config --global user.name $GIT_USER_NAME
         echo "No global git user name was set, I have set it to ${BOLD}$GIT_USER_NAME${RESET}"
@@ -237,58 +197,31 @@ setup_git() {
 }
 
 #==================================================================================================
-# setup subpixel hinting for freetype-freeworld
+# setup mpv (before it is run config file or dir does not exist)
 #==================================================================================================
-# setup_freetype_freeworld() {
-#     gsettings set org.gnome.settings-daemon.plugins.xsettings hinting slight
-#     gsettings set org.gnome.settings-daemon.plugins.xsettings antialiasing rgba
-#     echo "Xft.lcdfilter: lcddefault" >>"$HOME/.Xresources"
-# }
-
-#==================================================================================================
-# create offline install
-#==================================================================================================
-# create_offline_install() {
-#     shopt -s globstar
-
-#     dnf clean packages
-#     cd /var/cache/dnf/
-#     sudo dnf -y upgrade --downloadonly
-#     mkdir "$HOME/offline-system-updates"
-#     sudo mv **/*.rpm "$HOME/offline-system-updates"
-
-#     # install updates before downloading user selected programs to avoid dependency downgrading
-#     cd "$HOME/offline-system-updates"
-#     sudo dnf install *.rpm
-
-#     dnf clean packages
-#     cd /var/cache/dnf/
-#     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly
-#     mkdir "$HOME/offline-user-packages"
-#     sudo mv **/*.rpm "$HOME/offline-user-packages"
-#     echo
-#     echo "Your .rpm files live in ${GREEN}~/offline-system-updates${RESET} and ${GREEN}~/offline-user-packages${RESET}"
-#     echo "${BOLD}On Fresh Fedora 29${RESET} install system updates first, then user packages with ${GREEN}sudo dnf install *.rpm${RESET} in respective directories"
-#     echo "Don't forget to add the repos for updates!"
-# }
+setup_mpv() {
+    echo "Setting up mpv..."
+    mkdir "$HOME/.config/mpv"
+    cat >"$HOME/.config/mpv/mpv.conf" <<EOL
+profile=gpu-hq
+hwdec=auto
+fullscreen=yes
+EOL
+}
 
 #==================================================================================================
-# create offline install
-# --downloaddir=<path>
+# install and create offline install
 #==================================================================================================
 create_offline_install() {
-    local system_updates_dir="$HOME/offline-system-updates"
-    local user_updates_dir="$HOME/offline-user-packages"
-
     mkdir "$system_updates_dir" "$user_updates_dir"
 
+    echo "Updating Fedora and installing packages..."
     sudo dnf -y upgrade --downloadonly --downloaddir="$system_updates_dir"
-
-    # install system updates first to avoid dnf downloading unwanted dependencies for user-packages
     cd "$system_updates_dir"
     sudo dnf install *.rpm
-
     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly --downloaddir="$user_updates_dir"
+    cd "$user_updates_dir"
+    sudo dnf install *.rpm
 
     echo
     echo "Your .rpm files live in ${GREEN}$system_updates_dir${RESET} and ${GREEN}$user_updates_dir${RESET}"
@@ -296,94 +229,204 @@ create_offline_install() {
 }
 
 #==================================================================================================
-# main
+# update_and_install_online
 #==================================================================================================
-main() {
-    local hostname
-    clear
-    check_dependencies
-    echo "${BOLD}Programs to add:${RESET}"
-    echo
-    create_package_list
-    echo
-    echo "${BOLD}Programs to remove:${RESET}"
-    echo
-    echo "${GREEN}${REMOVE_LIST[*]}${RESET}"
-    echo
-    read -p "Proceed with these options? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "Adding repositories..."
-        add_repositories
-        echo
-        read -p "For offline installation would you like to create a directory of .rpm files with new system updates + new programs and quit? (y/n) " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            create_offline_install
-            exit
-        else
-            echo
-            read -rp "What is this computer's name (hostname)? " hostname
-            hostnamectl set-hostname "$hostname"
-            echo "Updating Fedora and installing packages..."
-            sudo dnf -y remove "${REMOVE_LIST[@]}"
-            sudo dnf -y --refresh upgrade
-            sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}"
-            setup_desktop
-            setup_git
+update_and_install_online() {
+    echo "Updating Fedora and installing packages..."
+    sudo dnf -y --refresh upgrade
+    sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}"
+}
 
-            if [[ ${PACKAGES_TO_INSTALL[*]} == *'code'* ]]; then
-                setup_vscode
-                setup_shfmt
-            fi
-
-            if [[ ${PACKAGES_TO_INSTALL[*]} == *'node'* ]]; then
-                npm install -g pnpm
-            fi
-
-            if [[ ${PACKAGES_TO_INSTALL[*]} == *'mpv'* ]]; then
-                mkdir "$HOME/.config/mpv"
-                cat >"$HOME/.config/mpv/mpv.conf" <<EOL
-profile=gpu-hq
-hwdec=auto
-fullscreen=yes
-EOL
-            fi
-
-            if [[ ${PACKAGES_TO_INSTALL[*]} == *'jack-audio'* ]]; then
-                setup_jack
-            fi
-
-            cat <<EOL
-After installation you may perform these additional tasks:
-
-- mpv addition settings include:
- # gpu-context=drm
-
- # video-sync=display-resample
- # interpolation
- # tscale=oversample
-- Install 'Hide Top Bar' extension from Gnome software
-- Firefox "about:support" what is compositor? If 'basic' open "about:config"
-  find "layers.acceleration.force-enabled" and switch to true, this will
-  force OpenGL acceleration
-- Update .bash_profile with
-  'PATH=$PATH:$HOME/.local/bin:$HOME/bin:$HOME/Documents/scripts:$HOME/Documents/scripts/borg-backup'
-- Consider "sudo dnf install kernel-tools", "sudo cpupower frequency-set --governor performance"
-- Files > preferences > views > sort folders before files
-- Change shotwell import directory format to %Y/%m + rename lower case, import photos from external drive
-- UMS > un-tick general config > enable external network + check force network on interface correct network (wlp2s0)
-- Allow virtual machines that use fusefs to intall properly with SELinux # sudo setsebool -P virt_use_fusefs 1
-- make symbolic links to media ln -s /run/media/david/WD-Red-2TB/Media/Audio ~/Music
-  =================
-  REBOOTING NOW!!!!
-  shutdown -r
-  =================
-EOL
-        fi
+#==================================================================================================
+# update_and_install_offline
+#==================================================================================================
+update_and_install_offline() {
+    if [[ ! -d "$system_updates_dir" || ! -d "$user_updates_dir" ]]; then
+        echo "${GREEN}$system_updates_dir${RESET} or ${GREEN}$user_updates_dir${RESET} do not exist!"
+        exit 1
     else
-        exit
+        echo "Updating Fedora and installing packages..."
+        cd "$system_updates_dir"
+        sudo dnf install *.rpm
+        cd "$user_updates_dir"
+        sudo dnf install *.rpm
     fi
 }
 
+#==================================================================================================
+# remove_unwanted_programs
+#==================================================================================================
+remove_unwanted_programs() {
+    echo "Removing unwanted programs..."
+    sudo dnf -y remove "${REMOVE_LIST[@]}"
+}
+
+#==================================================================================================
+# main
+#==================================================================================================
+main() {
+    contains() {
+        declare -n arr
+        arr=$1
+        local term=$2
+        local el
+        for el in "${arr[@]}"; do
+            [[ $el == "$term" ]] && return 0
+        done
+        return 1
+    }
+
+    if [[ $(rpm -E %fedora) -lt 28 ]]; then
+        echo >&2 "You must install at least ${GREEN}Fedora 28${RESET} to use this script" && exit 1
+    fi
+
+    clear
+    cat <<EOL
+===================================================================================================
+Welcome to the Fedora 29+ Ultimate Setup Script!
+===================================================================================================
+
+${BOLD}Programs to add:${RESET}
+
+EOL
+    create_package_list
+    cat <<EOL
+
+${BOLD}Programs to remove:${RESET}
+
+${GREEN}${REMOVE_LIST[*]}${RESET}
+
+Would you like to use your internet connection to:
+
+${BOLD}1${RESET} Download system updates and install/setup user selected programs
+${BOLD}2${RESET} Download system updates and install/setup user selected programs
+  and create offline install files for future use
+
+Or use offline install files created previously to:
+
+${BOLD}3${RESET} Install system updates and install/setup user selected programs
+
+EOL
+
+    read -p "Please select from the above options (1/2/3) " -n 1 -r
+
+    #==============================================================================================
+    # set host name
+    #==============================================================================================
+    echo
+    local hostname
+    read -rp "What is this computer's name? (enter to keep current name) " hostname
+    if [[ ! -z "$hostname" ]]; then
+        hostnamectl set-hostname "$hostname"
+    fi
+
+    case $REPLY in
+    1)
+        add_repositories
+        remove_unwanted_programs
+        update_and_install_online
+        ;;
+    2)
+        add_repositories
+        remove_unwanted_programs
+        create_offline_install
+
+        ;;
+    3)
+        add_repositories
+        remove_unwanted_programs
+        update_and_install_offline
+        ;;
+    *)
+        echo "$REPLY was an invalid choice"
+        exit
+        ;;
+    esac
+
+    #==============================================================================================
+    # setup software on the install list and install pnpm if required
+    #==============================================================================================
+    setup_git
+
+    if contains PACKAGES_TO_INSTALL 'code'; then
+        setup_vscode
+        setup_shfmt
+    fi
+
+    if contains PACKAGES_TO_INSTALL 'node'; then
+        npm install -g pnpm
+    fi
+
+    if contains PACKAGES_TO_INSTALL 'mpv'; then
+        setup_mpv
+    fi
+
+    if contains PACKAGES_TO_INSTALL 'jack-audio'; then
+        setup_jack
+    fi
+
+    #==============================================================================================
+    # setup pulse audio
+    #
+    # *pacmd list-sinks | grep sample and see bit-depth available for interface
+    # *pulseaudio --dump-re-sample-methods and see re-sampling available
+    #
+    # *MAKE SURE your interface can handle s32le 32bit rather than the default 16bit
+    #==============================================================================================
+    sudo sed -i "s/; default-sample-format = s16le/default-sample-format = s32le/g" /etc/pulse/daemon.conf
+    sudo sed -i "s/; resample-method = speex-float-1/resample-method = speex-float-10/g" /etc/pulse/daemon.conf
+    sudo sed -i "s/; avoid-resampling = false/avoid-resampling = true/g" /etc/pulse/daemon.conf
+
+    #==============================================================================================
+    # setup gnome desktop gsettings
+    #==============================================================================================
+    gsettings set org.gnome.settings-daemon.plugins.media-keys max-screencast-length 0 # Ctrl + Shift + Alt + R to start and stop screencast
+    gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:minimize,maximize,close'
+    gsettings set org.gnome.desktop.interface clock-show-date true
+    gsettings set org.gnome.desktop.session idle-delay 1200
+    gsettings set org.gnome.desktop.input-sources xkb-options "['caps:backspace', 'terminate:ctrl_alt_bksp']"
+    gsettings set org.gnome.shell.extensions.auto-move-windows application-list "['org.gnome.Nautilus.desktop:2', 'org.gnome.Terminal.desktop:3', 'code.desktop:1', 'firefox.desktop:1']"
+    gsettings set org.gnome.shell enabled-extensions "['pomodoro@arun.codito.in', 'auto-move-windows@gnome-shell-extensions.gcampax.github.com']"
+    gsettings set org.gnome.settings-daemon.plugins.color night-light-enabled true
+
+    #==============================================================================================
+    # make a few little changes
+    #==============================================================================================
+    mkdir "$HOME/sites"
+    echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+    touch ~/Templates/empty-file # so you can create new documents from nautilus
+    cat >>"$HOME/.bashrc" <<EOL
+alias ls="ls -ltha --color --group-directories-first" # l=long listing format, t=sort by modification time (newest first), h=human readable sizes, a=print hidden files
+alias tree="tree -Catr --noreport --dirsfirst --filelimit 100" # -C=colorization on, a=print hidden files, t=sort by modification time, r=reversed sort by time (newest first)
+EOL
+
+    cat <<EOL
+  =================
+  REBOOT NOW!!!!
+  shutdown -r
+  =================
+EOL
+
+}
 main
+
+# After installation you may perform these additional tasks:
+
+# - mpv addition settings include:
+#  # gpu-context=drm
+
+#  # video-sync=display-resample
+#  # interpolation
+#  # tscale=oversample
+# - Install 'Hide Top Bar' extension from Gnome software
+# - Firefox "about:support" what is compositor? If 'basic' open "about:config"
+#   find "layers.acceleration.force-enabled" and switch to true, this will
+#   force OpenGL acceleration
+# - Update .bash_profile with
+#   'PATH=$PATH:$HOME/.local/bin:$HOME/bin:$HOME/Documents/scripts:$HOME/Documents/scripts/borg-backup'
+# - Consider "sudo dnf install kernel-tools", "sudo cpupower frequency-set --governor performance"
+# - Files > preferences > views > sort folders before files
+# - Change shotwell import directory format to %Y/%m + rename lower case, import photos from external drive
+# - UMS > un-tick general config > enable external network + check force network on interface correct network (wlp2s0)
+# - Allow virtual machines that use fusefs to intall properly with SELinux # sudo setsebool -P virt_use_fusefs 1
+# - make symbolic links to media ln -s /run/media/david/WD-Red-2TB/Media/Audio ~/Music
