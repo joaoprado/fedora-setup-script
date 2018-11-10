@@ -17,7 +17,7 @@
 # is this the secret to stopping them being deleted after install? will it work without reset?
 # put it back to zero after
 # put back the way that does not use cd too
-# echo 'keepcache=1' | sudo tee -a /etc/dnf/dnf.conf
+# >> MUST BE RUN BEFORE and system restarted echo 'keepcache=1' | sudo tee -a /etc/dnf/dnf.conf
 
 set -euo pipefail
 GREEN=$(tput setaf 2)
@@ -338,9 +338,7 @@ EOL
         ;;&
     *' nodejs '*)
         echo "${BOLD}Setting up pnpm...${RESET}"
-        sudo npm install -g pnpm
-        sudo pnpm install -g pnpm
-        sudo pnpm install -g npm-check
+        sudo npm install -g pnpm npm-check
         cat >>"$HOME/.bashrc" <<EOL
 export NPM_CHECK_INSTALLER=pnpm
 EOL
