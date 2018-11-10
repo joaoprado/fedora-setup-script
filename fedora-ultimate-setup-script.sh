@@ -15,6 +15,8 @@
 #==================================================================================================
 
 # is this the secret to stopping them being deleted after install? will it work without reset?
+# put it back to zero after
+# put back the way that does not use cd too
 echo 'keepcache=1' | sudo tee -a /etc/dnf/dnf.conf
 
 set -euo pipefail
@@ -182,7 +184,7 @@ function setup_shfmt() {
 # setup git
 #==================================================================================================
 setup_git() {
-    echo "${BOLD}Setting up git...${RESET}"
+    echo "${BOLD}Setting up git globals...${RESET}"
     if [[ -z $(git config --get user.name) ]]; then
         git config --global user.name $GIT_USER_NAME
         echo "No global git user name was set, I have set it to ${BOLD}$GIT_USER_NAME${RESET}"
@@ -213,17 +215,15 @@ EOL
 create_offline_install() {
     mkdir "$system_updates_dir" "$user_updates_dir"
 
-    echo "${BOLD}Updating Fedora and installing packages...${RESET}"
+    echo "${BOLD}Updating Fedora, installing packages, and saving .rpm files...${RESET}"
     sudo dnf -y upgrade --downloadonly --downloaddir="$system_updates_dir"
-    cd "$system_updates_dir"
-    sudo dnf install *.rpm
+    sudo dnf install "$system_updates_dir"/*.rpm
     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly --downloaddir="$user_updates_dir"
-    cd "$user_updates_dir"
-    sudo dnf install *.rpm
+    sudo dnf install "$user_updates_dir"/*.rpm
 
     echo
     echo "Your .rpm files live in ${GREEN}$system_updates_dir${RESET} and ${GREEN}$user_updates_dir${RESET}"
-    echo "${BOLD}On Fresh Fedora 29${RESET} install system updates first, then user packages with ${GREEN}sudo dnf install *.rpm${RESET} in respective directories"
+    echo "${BOLD}On Fresh Fedora ISO install${RESET} copy dirs into home folder and run script choosing option 3 (or use ${GREEN}sudo dnf install *.rpm${RESET} in respective directories)"
 }
 
 #==================================================================================================
@@ -244,10 +244,8 @@ update_and_install_offline() {
         exit 1
     else
         echo "${BOLD}Updating Fedora and installing packages...${RESET}"
-        cd "$system_updates_dir"
-        sudo dnf -y install *.rpm
-        cd "$user_updates_dir"
-        sudo dnf -y install *.rpm
+        sudo dnf -y install "$system_updates_dir"/*.rpm
+        sudo dnf -y install "$user_updates_dir"/*.rpm
     fi
 }
 
@@ -295,11 +293,11 @@ ${BOLD}3${RESET} Install system updates and install/setup user selected programs
 
 EOL
 
+    #==============================================================================================
+    # choose options and set host name
+    #==============================================================================================
     read -p "Please select from the above options (1/2/3) " -n 1 -r
 
-    #==============================================================================================
-    # set host name
-    #==============================================================================================
     echo
     local hostname
     read -rp "What is this computer's name? (enter to keep current name) " hostname
@@ -330,11 +328,11 @@ EOL
     esac
 
     #==============================================================================================
-    # setup software on the install list and install pnpm if required
+    # setup software
     #==============================================================================================
     setup_git
 
-    # note the spaces to make sure something like 'notnode' could not slip in
+    # note the spaces to make sure something like 'notnode' could not trigger 'nodejs' using [*]
     case " ${PACKAGES_TO_INSTALL[*]} " in
     *' code '*)
         setup_vscode
