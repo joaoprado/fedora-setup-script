@@ -74,7 +74,6 @@ add_repositories() {
 # setup visual studio code
 #==================================================================================================
 setup_vscode() {
-    echo "${BOLD}Setting up Visual Studio Code...${RESET}"
     local code_extensions=(ban.spellright bierner.comment-tagged-templates
         dbaeumer.vscode-eslint deerawan.vscode-dash esbenp.prettier-vscode
         foxundermoon.shell-format mkaufman.HTMLHint msjsdiag.debugger-for-chrome
@@ -151,7 +150,6 @@ EOL
 # setup jack
 #==================================================================================================
 setup_jack() {
-    echo "${BOLD}Setting up jack...${RESET}"
     sudo usermod -a -G jackuser "$USERNAME" # Add current user to jackuser group
     sudo tee /etc/security/limits.d/95-jack.conf <<EOL
 # Default limits for users of jack-audio-connection-kit
@@ -200,7 +198,6 @@ setup_git() {
 # setup mpv (before it is run config file or dir does not exist)
 #==================================================================================================
 setup_mpv() {
-    echo "${BOLD}Setting up mpv...${RESET}"
     mkdir "$HOME/.config/mpv"
     cat >"$HOME/.config/mpv/mpv.conf" <<EOL
 profile=gpu-hq
@@ -223,7 +220,7 @@ create_offline_install() {
 
     echo
     echo "Your .rpm files live in ${GREEN}$system_updates_dir${RESET} and ${GREEN}$user_updates_dir${RESET}"
-    echo "${BOLD}On Fresh Fedora ISO install${RESET} copy dirs into home folder and run script choosing option 3 (or use ${GREEN}sudo dnf install *.rpm${RESET} in respective directories)"
+    echo "On Fresh Fedora ISO install copy dirs into home folder and run script choosing option 3 (or use ${GREEN}sudo dnf install *.rpm${RESET} in respective directories)"
 }
 
 #==================================================================================================
@@ -335,16 +332,25 @@ EOL
     # note the spaces to make sure something like 'notnode' could not trigger 'nodejs' using [*]
     case " ${PACKAGES_TO_INSTALL[*]} " in
     *' code '*)
+        echo "${BOLD}Setting up Visual Studio Code...${RESET}"
         setup_vscode
         setup_shfmt
         ;;&
     *' nodejs '*)
+        echo "${BOLD}Setting up pnpm...${RESET}"
         sudo npm install -g pnpm
+        sudo pnpm install -g pnpm
+        sudo pnpm install -g npm-check
+        cat >>"$HOME/.bashrc" <<EOL
+export NPM_CHECK_INSTALLER=pnpm
+EOL
         ;;&
     *' mpv '*)
+        echo "${BOLD}Setting up mpv...${RESET}"
         setup_mpv
         ;;&
     *' jack-audio-connection-kit '*)
+        echo "${BOLD}Setting up jack...${RESET}"
         setup_jack
         ;;&
     esac
@@ -385,32 +391,30 @@ alias tree="tree -Catr --noreport --dirsfirst --filelimit 100" # -C=colorization
 EOL
 
     cat <<EOL
-  =================
-  REBOOT NOW!!!!
+  ===================================================
+  REBOOT NOW!!!! (or things may not work as expected)
   shutdown -r
-  =================
+  ===================================================
 EOL
 
 }
 main
 
-# After installation you may perform these additional tasks:
+# NOTES
 
 # - mpv addition settings include:
-#  # gpu-context=drm
-
-#  # video-sync=display-resample
-#  # interpolation
-#  # tscale=oversample
+#  gpu-context=drm
+#  video-sync=display-resample
+#  interpolation
+#  tscale=oversample
+#
 # - Install 'Hide Top Bar' extension from Gnome software
 # - Firefox "about:support" what is compositor? If 'basic' open "about:config"
 #   find "layers.acceleration.force-enabled" and switch to true, this will
 #   force OpenGL acceleration
 # - Update .bash_profile with
 #   'PATH=$PATH:$HOME/.local/bin:$HOME/bin:$HOME/Documents/scripts:$HOME/Documents/scripts/borg-backup'
-# - Consider "sudo dnf install kernel-tools", "sudo cpupower frequency-set --governor performance"
 # - Files > preferences > views > sort folders before files
 # - Change shotwell import directory format to %Y/%m + rename lower case, import photos from external drive
 # - UMS > un-tick general config > enable external network + check force network on interface correct network (wlp2s0)
-# - Allow virtual machines that use fusefs to intall properly with SELinux # sudo setsebool -P virt_use_fusefs 1
 # - make symbolic links to media ln -s /run/media/david/WD-Red-2TB/Media/Audio ~/Music
