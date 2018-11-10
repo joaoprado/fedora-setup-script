@@ -217,9 +217,9 @@ create_offline_install() {
 
     echo "${BOLD}Updating Fedora, installing packages, and saving .rpm files...${RESET}"
     sudo dnf -y upgrade --downloadonly --downloaddir="$system_updates_dir"
-    sudo dnf install "$system_updates_dir"/*.rpm
+    sudo dnf -y install "$system_updates_dir"/*.rpm
     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly --downloaddir="$user_updates_dir"
-    sudo dnf install "$user_updates_dir"/*.rpm
+    sudo dnf -y install "$user_updates_dir"/*.rpm
 
     echo
     echo "Your .rpm files live in ${GREEN}$system_updates_dir${RESET} and ${GREEN}$user_updates_dir${RESET}"
