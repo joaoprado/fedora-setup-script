@@ -9,6 +9,7 @@
 #      WEBSITE: https://www.elsewebdevelopment.com/
 #
 # REQUIREMENTS: Fresh copy of Fedora 29 installed on your computer
+#               https://dl.fedoraproject.org/pub/fedora/linux/releases/29/Workstation/x86_64/iso/
 #       AUTHOR: David Else
 #      COMPANY: Else Web Development
 #      VERSION: 2.0
@@ -166,7 +167,7 @@ EOL
 # setup shfmt
 #
 # *used for vs code shell format extension
-# *binary must be in current directory https://github.com/mvdan/sh/releases
+# *binary needed https://github.com/mvdan/sh/releases/download/v2.5.1/shfmt_v2.5.1_linux_amd64
 #==================================================================================================
 function setup_shfmt() {
     echo "${BOLD}Setting up shfmt...${RESET}"
@@ -182,7 +183,6 @@ function setup_shfmt() {
 # setup git
 #==================================================================================================
 setup_git() {
-    echo "${BOLD}Setting up git globals...${RESET}"
     if [[ -z $(git config --get user.name) ]]; then
         git config --global user.name $GIT_USER_NAME
         echo "No global git user name was set, I have set it to ${BOLD}$GIT_USER_NAME${RESET}"
@@ -213,10 +213,10 @@ create_offline_install() {
     mkdir "$system_updates_dir" "$user_updates_dir"
 
     echo "${BOLD}Updating Fedora, installing packages, and saving .rpm files...${RESET}"
-    sudo dnf -y upgrade --downloadonly --downloaddir="$system_updates_dir"
-    sudo dnf -y install "$system_updates_dir"/*.rpm
-    sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly --downloaddir="$user_updates_dir"
-    sudo dnf -y install "$user_updates_dir"/*.rpm
+    sudo dnf -y upgrade --downloadonly --downloaddir="$system_updates_dir" --setopt=keepcache=1
+    sudo dnf -y install "$system_updates_dir"/*.rpm --setopt=keepcache=1
+    sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly --downloaddir="$user_updates_dir" --setopt=keepcache=1
+    sudo dnf -y install "$user_updates_dir"/*.rpm --setopt=keepcache=1
 
     echo
     echo "Your .rpm files live in ${GREEN}$system_updates_dir${RESET} and ${GREEN}$user_updates_dir${RESET}"
@@ -241,8 +241,8 @@ update_and_install_offline() {
         exit 1
     else
         echo "${BOLD}Updating Fedora and installing packages...${RESET}"
-        sudo dnf -y install "$system_updates_dir"/*.rpm
-        sudo dnf -y install "$user_updates_dir"/*.rpm
+        sudo dnf -y install "$system_updates_dir"/*.rpm --setopt=keepcache=1
+        sudo dnf -y install "$user_updates_dir"/*.rpm --setopt=keepcache=1
     fi
 }
 
@@ -297,7 +297,7 @@ EOL
 
     echo
     local hostname
-    read -rp "What is this computer's name? (enter to keep current name) " hostname
+    read -rp "What is this computer's name? [$HOSTNAME] " hostname
     if [[ ! -z "$hostname" ]]; then
         hostnamectl set-hostname "$hostname"
     fi
@@ -327,6 +327,7 @@ EOL
     #==============================================================================================
     # setup software
     #==============================================================================================
+    echo "${BOLD}Setting up git globals...${RESET}"
     setup_git
 
     # note the spaces to make sure something like 'notnode' could not trigger 'nodejs' using [*]
@@ -361,6 +362,7 @@ EOL
     #
     # *MAKE SURE your interface can handle s32le 32bit rather than the default 16bit
     #==============================================================================================
+    echo "${BOLD}Setting up Pulse Audio...${RESET}"
     sudo sed -i "s/; default-sample-format = s16le/default-sample-format = s32le/g" /etc/pulse/daemon.conf
     sudo sed -i "s/; resample-method = speex-float-1/resample-method = speex-float-10/g" /etc/pulse/daemon.conf
     sudo sed -i "s/; avoid-resampling = false/avoid-resampling = true/g" /etc/pulse/daemon.conf
@@ -368,6 +370,7 @@ EOL
     #==============================================================================================
     # setup gnome desktop gsettings
     #==============================================================================================
+    echo "${BOLD}Setting up Gnome...${RESET}"
     gsettings set org.gnome.settings-daemon.plugins.media-keys max-screencast-length 0 # Ctrl + Shift + Alt + R to start and stop screencast
     gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:minimize,maximize,close'
     gsettings set org.gnome.desktop.interface clock-show-date true
@@ -381,6 +384,7 @@ EOL
     # make a few little changes
     #==============================================================================================
     mkdir "$HOME/sites"
+    echo "Xft.lcdfilter: lcdlight" >>"$HOME/.Xresources"
     echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
     touch ~/Templates/empty-file # so you can create new documents from nautilus
     cat >>"$HOME/.bashrc" <<EOL
@@ -394,7 +398,6 @@ EOL
   shutdown -r
   ===================================================
 EOL
-
 }
 main
 
