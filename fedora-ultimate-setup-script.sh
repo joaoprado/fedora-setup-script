@@ -15,6 +15,8 @@
 #      VERSION: 2.0
 #==================================================================================================
 
+# WARNING sudo time outs and you need to enter password a few times
+
 set -euo pipefail
 GREEN=$(tput setaf 2)
 BOLD=$(tput bold)
