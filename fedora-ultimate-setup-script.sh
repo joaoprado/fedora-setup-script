@@ -15,11 +15,6 @@
 #      VERSION: 2.0
 #==================================================================================================
 
-# is this the secret to stopping them being deleted after install? will it work without reset?
-# put it back to zero after
-# put back the way that does not use cd too
-# >> MUST BE RUN BEFORE and system restarted echo 'keepcache=1' | sudo tee -a /etc/dnf/dnf.conf
-
 set -euo pipefail
 GREEN=$(tput setaf 2)
 BOLD=$(tput bold)
