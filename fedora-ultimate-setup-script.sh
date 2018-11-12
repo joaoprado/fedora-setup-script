@@ -273,6 +273,8 @@ ${BOLD}Programs to remove:${RESET}
 
 ${GREEN}${REMOVE_LIST[*]}${RESET}
 
+${BOLD}Git globals will be set to:${RESET} USER_NAME ${GREEN}$GIT_USER_NAME${RESET} EMAIL ${GREEN}$GIT_EMAIL${RESET}
+
 Would you like to use your internet connection to:
 
 ${BOLD}1${RESET} Download system updates and install/setup user selected programs
