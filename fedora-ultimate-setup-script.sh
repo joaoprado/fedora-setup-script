@@ -122,9 +122,6 @@ setup_vscode() {
   // Prettier formatting extension
   "prettier.singleQuote": true,
   "prettier.trailingComma": "all",
-  // HTML formatting
-  "html.format.endWithNewline": true,
-  "html.format.wrapLineLength": 80,
   // Various
   "workbench.statusBar.feedback.visible": false,
   "css.lint.zeroUnits": "warning",
