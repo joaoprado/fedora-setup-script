@@ -4,6 +4,8 @@ Using only the [official Fedora 29 Workstation ISO](https://getfedora.org) creat
 
 Use this script to update the system, install all your favourite programs, remove the ones you don't want, and setup your computer exactly the way you like. Optionally save all the .rpm files that are downloaded for later offline use. By doing this you can recreate the **exact same system without having access to the internet.**
 
+As default it has my custom tweaked setup that is biased towards front end web development, but it also has things like setting up mpv for GPU acceleration, Pulse Audio for high sound quality and some great Gnome desktop settings.
+
 ![screenshot](https://github.com/David-Else/fedora-ultimate-setup-script/blob/master/script-screenshot.png)
 
 # How to Use
@@ -35,11 +37,9 @@ $HOME/offline-system-updates
 $HOME/offline-user-packages
 ```
 
-Copy these directories along with the script which was run to create them onto a USB stick.
+Copy these directories along with the exact same script that was run to create them onto a USB stick. On the new computer install the original Fedora ISO, and then insert the USB key and run the script choosing option 3.
 
-On the new computer install the original Fedora ISO, and then insert the USB key and run the script choosing option 3.
-
-When offline mode is used any functionality that requires access to the internet is skipped, including setting up repositories. If you want updates in the future to any of the programs that were downloaded from non standard repositories you will need to add them at a later date. This can be done by re-running the script in offline mode with internet access, or manually.
+When offline install mode is used any functionality that requires access to the internet is skipped, including setting up repositories. If you want updates in the future to any of the programs that were downloaded from non standard repositories you will need to add the repos at a later date. This can be done by re-running the script in offline mode with internet access, or manually.
 
 # Customization
 
@@ -78,9 +78,7 @@ Later in the script in the `main()` function certain packages trigger certain ac
     esac
 ```
 
-This is where you can add custom commands or functions to setup the packages you have chosen to install.
-
-There are also a lot of universal default settings in `main()` you may want to edit.
+This is where you can add custom commands or functions to setup the packages you have chosen to install. There are also a lot of universal default settings in `main()` you may want to edit.
 
 ### Setting up Visual Studio Code (optional)
 

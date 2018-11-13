@@ -75,7 +75,7 @@ setup_vscode() {
         dbaeumer.vscode-eslint deerawan.vscode-dash esbenp.prettier-vscode
         foxundermoon.shell-format mkaufman.HTMLHint msjsdiag.debugger-for-chrome
         ritwickdey.LiveServer timonwong.shellcheck WallabyJs.quokka-vscode
-        Zignd.html-css-class-completion)
+        Zignd.html-css-class-completion bierner.markdown-preview-github-styles)
     for extension in "${code_extensions[@]}"; do
         code --install-extension "$extension"
     done
