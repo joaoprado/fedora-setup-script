@@ -20,9 +20,11 @@ cd fedora-ultimate-setup-script
 
 Now follow the on-screen instructions.
 
-## Offline Mode
+## Offline Mode (optional)
 
 To use this script offline requires you have used it before previously online to generate the .rpm files needed.
+
+First you run the script with option 2 which includes 'create offline install files for future use'.
 
 These files will have been stored by default in:
 
@@ -31,7 +33,11 @@ $HOME/offline-system-updates
 $HOME/offline-user-packages
 ```
 
-These directories must be copied into the same directory that you are executing the script, which will probably be on a USB stick.
+Copy these directories along with the script which was run to create them onto a USB stick.
+
+On the new computer install the original Fedora ISO, and then insert the USB key and run the script choosing option 3.
+
+**IMPORTANT** the time to create these files is after a totally fresh install of Fedora. This way all the updates follow on from the official ISO image, doing so at a later point will not give the correct results.
 
 When offline mode is used any functionality that requires access to the internet is skipped, including setting up repositories. If you want updates in the future to any of the programs that were downloaded from non standard repositories you will need to add them at a later date. This can be done by re-running the script in offline mode with internet access, or manually.
 
