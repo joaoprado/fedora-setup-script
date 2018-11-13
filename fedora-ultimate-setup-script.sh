@@ -17,7 +17,6 @@
 
 # WARNING sudo time outs and you need to enter password a few times
 
-set -euo pipefail
 GREEN=$(tput setaf 2)
 BOLD=$(tput bold)
 RESET=$(tput sgr0)
@@ -300,11 +299,13 @@ EOL
 
     case $REPLY in
     1)
+        set -euo pipefail
         add_repositories
         remove_unwanted_programs
         update_and_install_online
         ;;
     2)
+        set -euo pipefail
         add_repositories
         remove_unwanted_programs
         create_offline_install
