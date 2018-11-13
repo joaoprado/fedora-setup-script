@@ -22,7 +22,18 @@ Now follow the on-screen instructions.
 
 ## Offline Mode
 
-To use this script offline requires you have used it before previously online to generate the .rpm files needed
+To use this script offline requires you have used it before previously online to generate the .rpm files needed.
+
+These files will have been stored by default in:
+
+```
+$HOME/offline-system-updates
+$HOME/offline-user-packages
+```
+
+These directories must be copied into the same directory that you are executing the script, which will probably be on a USB stick.
+
+When offline mode is used any functionality that requires access to the internet is skipped, including setting up repositories. If you want updates in the future to any of the programs that were downloaded from non standard repositories you will need to add them at a later date. This can be done by re-running the script in offline mode with internet access, or manually.
 
 # Customization
 
@@ -62,3 +73,17 @@ Later in the script in the `main()` function certain packages trigger certain ac
 ```
 
 This is where you can add custom commands or functions to setup the packages you have chosen to install.
+
+There are also a lot of universal default settings in `main()` you may want to edit.
+
+### Setting up Visual Studio Code (optional)
+
+Inside the `setup_vscode()` there is an array called `code_extensions`, here you can add all your favourite extensions to be downloaded and installed.
+
+To obtain the names of currently installed extensions to add to the list you can use:
+
+```
+code --list-extensions
+```
+
+My entire user settings file is stored here, please copy and paste your own.
