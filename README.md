@@ -2,7 +2,7 @@
 
 Using only the [official Fedora 29 Workstation ISO](https://getfedora.org) create your perfect Fedora experience and save it to a USB drive to preserve forever!
 
-Use this script to update the system, install all your favourite programs, remove the ones you don't want, and set up your computer exactly the way you like. Optionally save all the .rpm files that are downloaded for later offline use. By doing this you can recreate the **exact same system without having access to the internet.**
+Use this script to update the system, install all your favourite programs, remove the ones you don't want, and setup your computer exactly the way you like. Optionally save all the .rpm files that are downloaded for later offline use. By doing this you can recreate the **exact same system without having access to the internet.**
 
 ![screenshot](https://github.com/David-Else/fedora-ultimate-setup-script/blob/master/script-screenshot.png)
 
