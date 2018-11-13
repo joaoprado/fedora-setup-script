@@ -11,12 +11,20 @@ Using the [official Fedora 29 Workstation ISO](https://getfedora.org) create you
 The `create_package_list()` function contains all the packages you want to install. It is an associative array in the following format:
 
 ```
-['type of package']='package-name-1 package-name-2'
+['category of package']='package-name-1 package-name-2'
 ```
 
-The `'type of package'` string is only used for categorizing and printing the results to the console, the exact wording is not important. The `'package-name'` string must be exactly the same as the name you type when using `dnf install package-name`.
+The `'category of package'` string is only used for caterogrization and printing the results to the console, the exact wording is not important. The `'package-name'` string must be exactly the same as the name you type when using `dnf install package-name`.
 
 To remove programs just edit the `REMOVE_LIST` array.
+
+```
+REMOVE_LIST=(gnome-photos gnome-documents rhythmbox totem cheese)
+```
+
+### Customize the setting up of repositories
+
+In the `add_repositories()` function you will see [RPM Fusion](https://rpmfusion.org/) and [Flathub](https://flathub.org/home) are installed by default. After that certain packages trigger certain repositories to be installed. You can add your own here.
 
 ### Customize the setting up of programs
 
