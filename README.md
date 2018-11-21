@@ -17,7 +17,7 @@ Download this repository using git, CD into the directory, and run:
 ```
 git clone https://github.com/David-Else/fedora-ultimate-setup-script
 cd fedora-ultimate-setup-script
-./fedora-ultimate-setup-script
+./fedora-ultimate-setup-script.sh
 ```
 
 Now follow the on-screen instructions.
