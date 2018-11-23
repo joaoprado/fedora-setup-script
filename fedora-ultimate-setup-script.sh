@@ -206,7 +206,7 @@ create_offline_install() {
     mkdir "$system_updates_dir" "$user_updates_dir"
 
     echo "${BOLD}Updating Fedora, installing packages, and saving .rpm files...${RESET}"
-    sudo dnf -y upgrade --downloadonly --downloaddir="$system_updates_dir" --setopt=keepcache=1
+    sudo dnf -y --refresh upgrade --downloadonly --downloaddir="$system_updates_dir" --setopt=keepcache=1
     sudo dnf -y install "$system_updates_dir"/*.rpm --setopt=keepcache=1
     sudo dnf -y install "${PACKAGES_TO_INSTALL[@]}" --downloadonly --downloaddir="$user_updates_dir" --setopt=keepcache=1
     sudo dnf -y install "$user_updates_dir"/*.rpm --setopt=keepcache=1
@@ -336,7 +336,7 @@ EOL
         ;;&
     *' nodejs '*)
         echo "${BOLD}Setting up pnpm...${RESET}"
-        sudo npm install -g pnpm npm-check
+        sudo npm install -g pnpm npm-check eslint
         cat >>"$HOME/.bashrc" <<EOL
 export NPM_CHECK_INSTALLER=pnpm
 EOL
