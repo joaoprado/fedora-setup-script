@@ -58,7 +58,7 @@ add_repositories() {
     sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
     if [[ ${PACKAGES_TO_INSTALL[*]} == *'winehq-stable'* ]]; then
-        sudo dnf config-manager --add-repo https://download.opensuse.org/repositories/Emulators:/Wine:/Fedora/Fedora_29_standard/Emulators:Wine:Fedora.repo
+        sudo dnf config-manager --add-repo https://dl.winehq.org/wine-builds/fedora/29/winehq.repo
     fi
 
     if [[ ${PACKAGES_TO_INSTALL[*]} == *'code'* ]]; then
@@ -336,7 +336,7 @@ EOL
         ;;&
     *' nodejs '*)
         echo "${BOLD}Setting up pnpm...${RESET}"
-        sudo npm install -g pnpm npm-check eslint
+        sudo npm install -g pnpm npm-check eslint jsdom
         cat >>"$HOME/.bashrc" <<EOL
 export NPM_CHECK_INSTALLER=pnpm
 EOL
