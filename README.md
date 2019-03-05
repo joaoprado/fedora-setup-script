@@ -49,9 +49,3 @@ Then run
 
 #### Notes
 Enable https://flathub.org to install Spotify, Slack, Sublime and other apps
-
-```
-
-
-
-```
